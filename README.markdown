@@ -22,9 +22,12 @@ You need to have PGCrypto installed before this guy will work. [LMGTFY](http://l
 		PGCrypto.keys[:private] = {:path => "~/.keys/private.key"}
 		PGCrypto.keys[:public] = {:path => "~/.keys/public.key"}
 
-4. PGCrypto columns are named `attribute_encrypted` and in the `binary` format, so do something like this:
+4. PGCrypto columns are named `attribute_encrypted` in the binary format, so do something like this:
 		
-		add_column :users, :social\_security\_number\_encrypted, :binary
+		add_column :users, :social_security_number_encrypted, :binary
+		
+	This will allow you to access `User#social_security_number` and store the user's social in an encrypted
+	column called `social_security_number_encryped`.
 
 5. Tell the User class to encrypt and decrypt the `social_security_number` attribute on the fly:
 		
@@ -47,14 +50,15 @@ a GPG-encrypted column that can only be decrypted with your secure key.
 Keys
 -
 
-You can tell PGCrypto about your keys in a number of fun ways. The most straightforward is to assign the actual
-content of the key manually:
+If you want to bundle your public key with your application, PGCrypto will automatically load Rails.root/.pgcrypto,
+so feel free to put your public key in there. You can also tell PGCrypto about your keys in a number of fun ways.
+The most straightforward is to assign the actual content of the key manually:
 
 	PGCrypto.keys[:private] = "-----BEGIN PGP PRIVATE KEY BLOCK----- ..."
 
 You can also give it more specific stuff:
 
-	PGCrypto.keys[:private] = {:path => ".private.key", :armored => true, :password => "myKeyPASSwhichizneededBRO"}
+	PGCrypto.keys[:private] = {:path => ".private.key", :armored => false, :password => "myKeyPASSwhichizneededBRO"}
 
 This is especially important if you password protect your private key files (and you SHOULD, for the record)!
 
@@ -69,8 +73,7 @@ If you do that, just tell PGCrypto which keys to use on which columns, using an 
 		pgcrypto :social_security_number, :private_key => :user_private, :public_key => :user_public
 	end
 
-FINALLY, if you want to bundle your public key with your application, PGCrypto will automatically load Rails.root/.pgcrypto,
-so feel free to put your public key in there. I recommend deploy-time passing of your private key and password, to ensure it
+I recommend deploy-time passing of your private key and password, to ensure it
 doesn't wind up in any long-term storage on the server:
 
 	PGCrypto.keys[:private] = {:value => ENV['PRIVATE_KEY'], :password => ENV['PRIVATE_KEY_PASSWORD']}
@@ -78,11 +81,15 @@ doesn't wind up in any long-term storage on the server:
 Warranty
 -
 
-As I mentioned before, this library is one HUGE hack. When you're using something like this alongside data that needs to be
-well protected, this is just scratching the surface. This will make it easy to follow the basics of asymmetric, GPG-based,
-column-level encryption in PostgreSQL but that's about it.
+As I mentioned before, this library is one HUGE hack. This is just scratching the surface of keeping your data secure.
+For example, if you don't protect your log files, anyone who can read them can get your private and public keys and
+decrypt whatever the hell they want. You'll also have to scrub your logs, because un-encrypted data is displayed right
+alongside those private and public keys.
 
-As such, the author and Delightful Widgets Inc. offer ABSOLUTELY NO GODDAMN WARRANTY. As I mentioned, this works great in our
+Basically, this will make it easy to start with asymmetric, GPG-based, column-level encryption in PostgreSQL. But that's about
+it; the rest is up to you.
+
+**As such,** the author and Delightful Widgets Inc. offer ***ABSOLUTELY NO GODDAMN WARRANTY***. As I mentioned, this works great in our
 Rails 3.2 world, but YMMV if your version of Arel or ActiveRecord are ahead or behind ours. Sorry, folks.
 
 WTF NO TESTS?!!
@@ -91,5 +98,4 @@ WTF NO TESTS?!!
 Nope. We built this inside of a production application, and used its test suite to debug everything. Since this is really just
 a preview release, I haven't written a suite for it yet. Sorry.
 
-Authored by Flip Sasser
-Copyright (C) 2012 Delightful Widgets, Inc.
+Copyright (C) 2012 Delightful Widgets, Inc. Built by Flip Sasser, Monkeypatcher Extraordinaire!
