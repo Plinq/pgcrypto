@@ -50,7 +50,7 @@ a GPG-encrypted column that can only be decrypted with your secure key.
 Keys
 -
 
-If you want to bundle your public key with your application, PGCrypto will automatically load Rails.root/.pgcrypto,
+If you want to bundle your public key with your application, PGCrypto will automatically load `#{Rails.root}/.pgcrypto`,
 so feel free to put your public key in there. You can also tell PGCrypto about your keys in a number of fun ways.
 The most straightforward is to assign the actual content of the key manually:
 
