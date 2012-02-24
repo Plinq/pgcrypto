@@ -1,0 +1,4 @@
+0.0.1
+	* INSERT, SELECT, and UPDATE statements are working. But I wrote this
+	  while testing with a production app, and thus haven't written
+    specific tests, so don't get your panties in a twist.
