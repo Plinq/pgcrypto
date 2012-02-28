@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = "pgcrypto"
-  s.version = "0.0.1"
+  s.version = "0.0.2"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Flip Sasser"]
-  s.date = "2012-02-24"
+  s.date = "2012-02-28"
   s.description = "\n      PGCrypto is an ActiveRecord::Base extension that allows you to asymmetrically\n      encrypt PostgreSQL columns with as little trouble as possible. It's totally\n      freaking rad.\n    "
   s.email = "flip@x451.com"
   s.extra_rdoc_files = [
@@ -27,7 +27,8 @@ Gem::Specification.new do |s|
     "lib/pgcrypto/active_record.rb",
     "lib/pgcrypto/arel.rb",
     "lib/pgcrypto/key.rb",
-    "lib/pgcrypto/table_manager.rb"
+    "lib/pgcrypto/table_manager.rb",
+    "pgcrypto.gemspec"
   ]
   s.homepage = "http://github.com/Plinq/pgcrypto"
   s.require_paths = ["lib"]
