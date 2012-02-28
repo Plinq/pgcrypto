@@ -1,3 +1,8 @@
+0.0.2
+	* Fixed a number of key-related bugs discovered in testing with our
+		second production app with encrypted columns. Also duck-typed AREL
+		statement types in a few places.
+
 0.0.1
 	* INSERT, SELECT, and UPDATE statements are working. But I wrote this
 	  while testing with a production app, and thus haven't written

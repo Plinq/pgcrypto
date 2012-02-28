@@ -20,11 +20,12 @@ ActiveRecord::ConnectionAdapters::PostgreSQLAdapter.class_eval do
     unless PGCrypto[table].empty?
       arel.ast.columns.each_with_index do |column, i|
         if options = PGCrypto[table][column.name]
-          key = PGCrypto.keys[options[:public_key] || :public]
-          value = arel.ast.values.expressions[i]
-          quoted_value = quote_string(value)
-          encryption_instruction = %[pgp_pub_encrypt(#{quoted_value}, #{key.dearmored})]
-          arel.ast.values.expressions[i] = Arel::Nodes::SqlLiteral.new(encryption_instruction)
+          if key = PGCrypto.keys[options[:public_key] || :public]
+            value = arel.ast.values.expressions[i]
+            quoted_value = quote_string(value)
+            encryption_instruction = %[pgp_pub_encrypt(#{quoted_value}, #{key.dearmored})]
+            arel.ast.values.expressions[i] = Arel::Nodes::SqlLiteral.new(encryption_instruction)
+          end
         end
       end
     end
@@ -67,11 +68,12 @@ ActiveRecord::ConnectionAdapters::PostgreSQLAdapter.class_eval do
         # Now loop through the children to encrypt them for the SELECT
         where.children.each do |child|
           if options = PGCrypto[child.left.relation.name]["#{child.left.name}_encrypted"]
-            key = PGCrypto.keys[options[:private_key] || :private]
-            joins[key.name] ||= "#{key.dearmored} AS #{key.name}_key"
-            child.left = Arel::Nodes::SqlLiteral.new("pgp_pub_decrypt(#{child.left.name}_encrypted, keys.#{key.name}_key)")
+            if key = PGCrypto.keys[options[:private_key] || :private]
+              joins[key.name] ||= "#{key.dearmored} AS #{key.name}_key"
+              child.left = Arel::Nodes::SqlLiteral.new("pgp_pub_decrypt(#{child.left.name}_encrypted, keys.#{key.name}_key)")
+            end
           end
-        end
+        end if where.respond_to?(:children)
       end
     end
     unless joins.empty?
@@ -81,22 +83,21 @@ ActiveRecord::ConnectionAdapters::PostgreSQLAdapter.class_eval do
 
   def pgcrypto_tweak_select_column(column, options, joins)
     return nil unless options[:type] == :pgp
-    key = PGCrypto.keys[options[:private_key] || :private]
-    select = %[pgp_pub_decrypt(#{column}, keys.#{key.name}_key#{", '#{key.password}'" if key.password}) AS "#{column.to_s.gsub(/_encrypted$/, '')}"]
-    joins[key.name] ||= "#{key.dearmored} AS #{key.name}_key"
-    Arel::Nodes::SqlLiteral.new(select)
+    if key = PGCrypto.keys[options[:private_key] || :private]
+      select = %[pgp_pub_decrypt(#{column}, keys.#{key.name}_key#{", '#{key.password}'" if key.password}) AS "#{column.to_s.gsub(/_encrypted$/, '')}"]
+      joins[key.name] ||= "#{key.dearmored} AS #{key.name}_key"
+      Arel::Nodes::SqlLiteral.new(select)
+    end
   end
 
   def pgcrypto_tweak_update(arel)
     # Loop through the assignments and make sure we take care of that whole
     # NULL value thing!
     arel.ast.values.each do |value|
-      if options = PGCrypto[value.left.relation.name][value.left.name]
-        case value.right
-        when NilClass
+      if value.respond_to?(:left) && options = PGCrypto[value.left.relation.name][value.left.name]
+        if value.right.nil?
           value.right = Arel::Nodes::SqlLiteral.new('NULL')
-        else
-          key = PGCrypto.keys[options[:public_key] || :public]
+        elsif key = PGCrypto.keys[options[:public_key] || :public]
           quoted_right = quote_string(value.right)
           encryption_instruction = %[pgp_pub_encrypt('#{quoted_right}', #{key.dearmored})]
           value.right = Arel::Nodes::SqlLiteral.new(encryption_instruction)
