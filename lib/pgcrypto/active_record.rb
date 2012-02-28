@@ -50,7 +50,7 @@ ActiveRecord::ConnectionAdapters::PostgreSQLAdapter.class_eval do
         if !PGCrypto[projection.relation.name].empty?
           # Okay, so first, check if it's a broad select
           if projection.name == '*'
-            # In this case, we want to just grap all the keys from columns in this table
+            # In this case, we want to just grab all the keys from columns in this table
             # and select them fancy-like
             PGCrypto[projection.relation.name].each do |column, options|
               new_projections.push(pgcrypto_tweak_select_column(column, options, joins))
@@ -61,7 +61,7 @@ ActiveRecord::ConnectionAdapters::PostgreSQLAdapter.class_eval do
           end
         end
       end
-      core.projections.push(*new_projections)
+      core.projections.push(*new_projections.compact)
 
       # Dios mio! What an operation! Now we'll do something similar for the WHERE statements
       core.wheres.each do |where|

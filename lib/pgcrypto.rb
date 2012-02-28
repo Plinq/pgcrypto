@@ -27,6 +27,7 @@ module PGCrypto
         unless columns_hash[encrypted_column_name]
           puts "WARNING: You defined #{column_name} as an encrypted column, but you don't have a corresponding #{encrypted_column_name} column in your database!"
         end
+
         # Stash the encryption type in our module so various monkeypatches can access it later!
         PGCrypto[table_name][encrypted_column_name] = options.symbolize_keys!
 
@@ -35,7 +36,7 @@ module PGCrypto
         def #{column_name}
           @attributes["#{column_name}"]
         end
-        
+
         # We write the attribute twice - once as the alias so the accessor keeps working, and once
         # so the actual attribute value is dirty and will be queued up for assignment
         def #{column_name}=(value)
