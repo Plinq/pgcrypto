@@ -2,7 +2,7 @@ require 'active_record/connection_adapters/postgresql_adapter'
 
 ActiveRecord::ConnectionAdapters::PostgreSQLAdapter.class_eval do
   alias :original_to_sql :to_sql
-  def to_sql(arel)
+  def to_sql(arel, *args)
     case arel
     when Arel::InsertManager
       pgcrypto_tweak_insert(arel)
@@ -11,7 +11,7 @@ ActiveRecord::ConnectionAdapters::PostgreSQLAdapter.class_eval do
     when Arel::UpdateManager
       pgcrypto_tweak_update(arel)
     end
-    original_to_sql(arel)
+    original_to_sql(arel, *args)
   end
 
   private

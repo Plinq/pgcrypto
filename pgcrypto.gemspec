@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = "pgcrypto"
-  s.version = "0.0.3"
+  s.version = "0.0.4"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Flip Sasser"]
-  s.date = "2012-02-28"
+  s.date = "2012-03-02"
   s.description = "\n      PGCrypto is an ActiveRecord::Base extension that allows you to asymmetrically\n      encrypt PostgreSQL columns with as little trouble as possible. It's totally\n      freaking rad.\n    "
   s.email = "flip@x451.com"
   s.extra_rdoc_files = [
