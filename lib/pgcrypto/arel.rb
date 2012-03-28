@@ -8,15 +8,17 @@ require 'arel/visitors/postgresql'
 # more specific bits here!
 
 Arel::Visitors::PostgreSQL.class_eval do
-  alias :original_visit_Arel_Nodes_Assignment :visit_Arel_Nodes_Assignment
+  unless instance_methods.include?(:visit_Arel_Nodes_Assignment_without_pgcrypto) || instance_methods.include?('visit_Arel_Nodes_Assignment_without_pgcrypto')
+    alias :visit_Arel_Nodes_Assignment_without_pgcrypto :visit_Arel_Nodes_Assignment
+  end
+
   def visit_Arel_Nodes_Assignment(assignment)
     # Hijack the normally inoccuous assignment that happens, seeing as how
     # Arel normally forwards this shit to someone else and I hate it. 
-    if PGCrypto[assignment.left.relation.name][assignment.left.name]
-      # raise "#{visit(assignment.left)} = #{visit(assignment.right)}"
+    if assignment.left.relation.name == PGCrypto::Column.table_name && assignment.left.name == 'value'
       "#{visit(assignment.left)} = #{visit(assignment.right)}"
     else
-      original_visit_Arel_Nodes_Assignment(assignment)
+      visit_Arel_Nodes_Assignment_without_pgcrypto(assignment)
     end
   end
 end

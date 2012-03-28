@@ -17,17 +17,15 @@ You need to have PGCrypto installed before this guy will work. [LMGTFY](http://l
 	
 		bundle
 
-3. Now point it to your public and private GPG keys:
+3. Generate the migration and the initializer:
+
+		rails g pgcrypto:install
+		rake db:migrate
+
+4. Edit the initializer in `config/initializers/pgcrypto.rb` to point out your public and private GPG keys:
 	
 		PGCrypto.keys[:private] = {:path => "~/.keys/private.key"}
 		PGCrypto.keys[:public] = {:path => "~/.keys/public.key"}
-
-4. PGCrypto columns are named `attribute_encrypted` in the binary format, so do something like this:
-		
-		add_column :users, :social_security_number_encrypted, :binary
-		
-	This will allow you to access `User#social_security_number` and store the user's social in an encrypted
-	column called `social_security_number_encryped`.
 
 5. Tell the User class to encrypt and decrypt the `social_security_number` attribute on the fly:
 		

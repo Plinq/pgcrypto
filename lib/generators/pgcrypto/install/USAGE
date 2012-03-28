@@ -1,0 +1,9 @@
+Description:
+    Generates the PGCrypto installation migration and key configuration files
+
+Example:
+    rails generate pgcrypto:install
+
+    This will create:
+        config/initializers/pgcrypto.rb
+        db/migrate/XXXXXX_install_pgcrypto.rb
