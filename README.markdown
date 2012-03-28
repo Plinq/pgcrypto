@@ -76,7 +76,7 @@ doesn't wind up in any long-term storage on the server:
 
 	PGCrypto.keys[:private] = {:value => ENV['PRIVATE_KEY'], :password => ENV['PRIVATE_KEY_PASSWORD']}
 
-Warranty
+Warranty (or lack thereof)
 -
 
 As I mentioned before, this library is one HUGE hack. This is just scratching the surface of keeping your data secure.
@@ -89,11 +89,5 @@ it; the rest is up to you.
 
 **As such,** the author and Delightful Widgets Inc. offer ***ABSOLUTELY NO GODDAMN WARRANTY***. As I mentioned, this works great in our
 Rails 3.2 world, but YMMV if your version of Arel or ActiveRecord are ahead or behind ours. Sorry, folks.
-
-WTF NO TESTS?!!
--
-
-Nope. We built this inside of a production application, and used its test suite to debug everything. Since this is really just
-a preview release, I haven't written a suite for it yet. Sorry.
 
 Copyright (C) 2012 Delightful Widgets, Inc. Built by Flip Sasser, Monkeypatcher Extraordinaire!
