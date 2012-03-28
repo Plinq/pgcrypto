@@ -24,7 +24,7 @@ module PGCrypto
 
     def initialize(options = {})
       if options.is_a?(String)
-        self.value = key
+        self.value = options
       elsif options.is_a?(Hash)
         options.each do |key, value|
           send("#{key}=", value)
@@ -34,7 +34,7 @@ module PGCrypto
 
     def path=(keyfile)
       keyfile = File.expand_path(keyfile)
-      raise PGCrypto::Error, "\#{keyfile} does not exist!" unless File.file?(keyfile)
+      raise PGCrypto::Error, "#{keyfile} does not exist!" unless File.file?(keyfile)
       @path = keyfile
       self.value = File.read(keyfile)
     end

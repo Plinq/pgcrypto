@@ -5,7 +5,7 @@
 
 Gem::Specification.new do |s|
   s.name = "pgcrypto"
-  s.version = "0.1.0"
+  s.version = "0.1.1"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Flip Sasser"]
@@ -18,12 +18,14 @@ Gem::Specification.new do |s|
   ]
   s.files = [
     ".rspec",
+    ".simplecov",
     "CHANGES",
     "Gemfile",
     "LICENSE",
     "README.markdown",
     "Rakefile",
     "VERSION",
+    "autotest/discover.rb",
     "lib/generators/pgcrypto/install/USAGE",
     "lib/generators/pgcrypto/install/install_generator.rb",
     "lib/generators/pgcrypto/install/templates/initializer.rb",
@@ -34,7 +36,11 @@ Gem::Specification.new do |s|
     "lib/pgcrypto/column.rb",
     "lib/pgcrypto/key.rb",
     "lib/pgcrypto/table_manager.rb",
-    "pgcrypto.gemspec"
+    "pgcrypto.gemspec",
+    "spec/lib/pgcrypto_spec.rb",
+    "spec/spec_helper.rb",
+    "spec/support/private.key",
+    "spec/support/public.key"
   ]
   s.homepage = "http://github.com/Plinq/pgcrypto"
   s.require_paths = ["lib"]

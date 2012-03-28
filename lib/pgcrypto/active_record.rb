@@ -9,6 +9,8 @@ ActiveRecord::ConnectionAdapters::PostgreSQLAdapter.class_eval do
     case arel
     when Arel::InsertManager
       pgcrypto_tweak_insert(arel, *args)
+    when Arel::SelectManager
+      pgcrypto_tweak_select(arel)
     when Arel::UpdateManager
       pgcrypto_tweak_update(arel)
     end
@@ -32,6 +34,47 @@ ActiveRecord::ConnectionAdapters::PostgreSQLAdapter.class_eval do
           end
         end
       end
+    end
+  end
+
+  def pgcrypto_tweak_select(arel)
+    # We start by looping through each "core," which is just
+    # a SelectStatement and correcting plain-text queries
+    # against an encrypted column...
+    joins = {}
+    table_name = nil
+    arel.ast.cores.each do |core|
+      # Yeah, I'm lazy. Whatevs.
+      next unless core.is_a?(Arel::Nodes::SelectCore) && !(columns = PGCrypto[table_name = core.source.left.name]).empty?
+
+      # We loop through each WHERE specification to determine whether or not the
+      # PGCrypto column should be JOIN'd upon; in which case, we, like, do it.
+      core.wheres.each do |where|
+        # Now loop through the children to encrypt them for the SELECT
+        where.children.each do |child|
+          if options = columns[child.left.name]
+            if key = PGCrypto.keys[options[:private_key] || :private]
+              join_name = "pgcrypto_column_#{child.left.name}"
+              joins[join_name] ||= {:column => child.left.name, :key => "#{key.dearmored} AS #{key.name}_key"}
+              child.left = Arel::Nodes::SqlLiteral.new(%[pgp_pub_decrypt("#{join_name}"."value", keys.#{key.name}_key)])
+            end
+          end
+        end if where.respond_to?(:children)
+      end
+    end
+    unless joins.empty?
+      key_joins = []
+      joins.each do |key_name, join|
+        key_joins.push(join[:key])
+        column = quote_string(join[:column].to_s)
+        arel.join(Arel::Nodes::SqlLiteral.new(%[
+          JOIN "pgcrypto_columns" AS "pgcrypto_column_#{column}" ON
+            "pgcrypto_column_#{column}"."owner_id" = "#{table_name}"."id"
+            AND "pgcrypto_column_#{column}"."owner_table" = '#{quote_string(table_name)}'
+            AND "pgcrypto_column_#{column}"."name" = '#{column}'
+        ]))
+      end
+      arel.join(Arel::Nodes::SqlLiteral.new("CROSS JOIN (SELECT #{key_joins.join(', ')}) AS keys"))
     end
   end
 

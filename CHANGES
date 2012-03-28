@@ -1,3 +1,8 @@
+0.1.1
+  * Rebuilt the WHERE clause stuff to make sure finders AND setters
+    both worked. It's fragile and hackish at this time, but we'll get
+    there, folks!
+
 0.1.0
 	* Overhauled the underpinnings to rely on a separate column. Adds
 	  on-demand loading of encrypted attributes from a central table
