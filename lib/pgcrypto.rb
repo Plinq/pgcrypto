@@ -39,7 +39,7 @@ module PGCrypto
         # We write the attribute directly to its child value. Neato!
         def #{column_name}=(value)
           if value.nil?
-            pgcrypto_columns.where(:name => "#{column_name}").mark_for_destruction
+            pgcrypto_columns.select{|column| column.name == "#{column_name}"}.each(&:mark_for_destruction)
             remove_instance_variable("@_pgcrypto_#{column_name}") if defined?(@_pgcrypto_#{column_name})
           else
             @_pgcrypto_#{column_name} ||= pgcrypto_columns.select{|column| column.name == "#{column_name}"}.first || pgcrypto_columns.new(:name => "#{column_name}")
@@ -66,11 +66,11 @@ module PGCrypto
       # whenever it's requested.
       options = PGCrypto[self.class.table_name][column_name]
       pgcrypto_column_finder = pgcrypto_columns
-      if key = PGCrypto.keys[options[:private_key] || :private]
+      if key = PGCrypto.keys[:private]
         pgcrypto_column_finder = pgcrypto_column_finder.select([
-          '"pgcrypto_columns"."id"',
-          %[pgp_pub_decrypt("pgcrypto_columns"."value", pgcrypto_keys.#{key.name}_key#{", '#{key.password}'" if key.password}) AS "value"]
-        ]).joins(%[CROSS JOIN (SELECT #{key.dearmored} AS "#{key.name}_key") AS pgcrypto_keys])
+          %("#{PGCrypto::Column.table_name}"."id"),
+          %[pgp_pub_decrypt("#{PGCrypto::Column.table_name}"."value", pgcrypto_keys.#{key.name}#{", '#{key.password}'" if key.password}) AS "value"]
+        ]).joins(%[CROSS JOIN (SELECT #{key.dearmored} AS "#{key.name}") AS pgcrypto_keys])
       end
       pgcrypto_column_finder.where(:name => column_name).first
     rescue ActiveRecord::StatementInvalid => e

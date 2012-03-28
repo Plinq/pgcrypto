@@ -1,3 +1,15 @@
+0.2.0
+  * Overhauled key system. Unfortunately, for performance reasons
+    and due to the insanely hacked nature of PGCrypto, multiple keys
+    are NO LONGER SUPPORTED. I'm working to bring them back, but
+    this was the only solution to get fully performant and functional
+    without any disasters.
+
+0.1.2
+  * Added automatic installation of the pgcrypto extension if'n it
+    doesn't already exist. Helpful, but doesn't fully make the 
+    `rake db:test:prepare` cut yet. Still working on that bit...
+
 0.1.1
   * Rebuilt the WHERE clause stuff to make sure finders AND setters
     both worked. It's fragile and hackish at this time, but we'll get
