@@ -30,7 +30,6 @@ RSpec.configure do |config|
     # Now connect to the newly created database
     ActiveRecord::Base.establish_connection(database_config)
 
-
     silence_stream(STDOUT) do
       # ...and load in the pgcrypto extension
       ActiveRecord::Base.connection.execute(%[CREATE EXTENSION pgcrypto])

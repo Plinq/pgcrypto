@@ -28,6 +28,9 @@ module PGCrypto
         # Stash the encryption type in our module so various monkeypatches can access it later!
         PGCrypto[table_name][column_name] = options.symbolize_keys
 
+        # Add dynamic attribute readers/writers for ActiveModel APIs
+        # define_attribute_method column_name
+
         # Add attribute readers/writers to keep this baby as fluid and clean as possible.
         start_line = __LINE__; pgcrypto_methods = <<-PGCRYPTO_METHODS
         def #{column_name}
@@ -38,6 +41,7 @@ module PGCrypto
 
         # We write the attribute directly to its child value. Neato!
         def #{column_name}=(value)
+          attribute_will_change!(:#{column_name}) if value != @_pgcrypto_#{column_name}.try(:value)
           if value.nil?
             pgcrypto_columns.select{|column| column.name == "#{column_name}"}.each(&:mark_for_destruction)
             remove_instance_variable("@_pgcrypto_#{column_name}") if defined?(@_pgcrypto_#{column_name})
@@ -45,6 +49,10 @@ module PGCrypto
             @_pgcrypto_#{column_name} ||= pgcrypto_columns.select{|column| column.name == "#{column_name}"}.first || pgcrypto_columns.new(:name => "#{column_name}")
             @_pgcrypto_#{column_name}.value = value
           end
+        end
+
+        def #{column_name}_changed?
+          changed.include?(:#{column_name})
         end
         PGCRYPTO_METHODS
 

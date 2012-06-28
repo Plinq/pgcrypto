@@ -46,5 +46,18 @@ describe PGCrypto do
       model = PGCryptoTestModel.create!(:test_column => 'i am findable!')
       PGCryptoTestModel.where(:test_column => model.test_column).count.should == 1
     end
+
+    it "should track changes" do
+      model = PGCryptoTestModel.create!(:test_column => 'i am clean')
+      model.test_column = "now i'm not!"
+      model.test_column_changed?.should be_true
+    end
+
+
+    it "should not be dirty if unchanged" do
+      model = PGCryptoTestModel.create!(:test_column => 'i am clean')
+      model.test_column = 'i am clean'
+      model.test_column_changed?.should_not be_true
+    end
   end
 end
