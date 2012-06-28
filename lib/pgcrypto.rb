@@ -69,6 +69,7 @@ module PGCrypto
 
   module InstanceMethods
     def select_pgcrypto_column(column_name)
+      return nil if new_record?
       # Now here's the fun part. We want the selector on PGCrypto columns to do the decryption
       # for us, so we have override the SELECT and add a JOIN to build out the decrypted value
       # whenever it's requested.

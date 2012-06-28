@@ -1,3 +1,7 @@
+0.2.2
+  * Don't try to load columns on new records; should further reduce
+    unnecessary database calls!
+
 0.2.1
   * Added ActiveModel::Dirty support, so you can now call *_changed?
     on your models tracking pgcrypto columns.
