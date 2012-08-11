@@ -1,25 +1,5 @@
 require 'rake'
 
-task :default => :spec
-
-begin
-  require 'spec/rake/spectask'
-
-  desc "Run all examples"
-  Spec::Rake::SpecTask.new('spec') do |t|
-    t.spec_files = FileList['spec/**/*.rb']
-  end
-
-  desc "Run all examples with RCov"
-  Spec::Rake::SpecTask.new('spec:rcov') do |t|
-    t.spec_files = FileList['spec/**/*.rb']
-    t.rcov = true
-    t.rcov_opts = ['--exclude', 'spec,gem']
-  end
-rescue LoadError
-  puts "Could not load Rspec. To run tests, use `gem install rspec`"
-end
-
 begin
   require 'jeweler'
   Jeweler::Tasks.new do |gemspec|
