@@ -65,9 +65,21 @@ module PGCrypto
         default_scope includes(:pgcrypto_columns)
       end
     end
+
+    def pgcrpyto_columns
+      PGCrypto[table_name]
+    end
   end
 
   module InstanceMethods
+    def reload_with_pgcrypto(*args)
+      self.class.pgcrpyto_columns.each do |column_name, options|
+        reset_attribute! column_name
+        changed_attributes.delete(column_name)
+      end
+      reload_without_pgcrypto *args
+    end
+
     def select_pgcrypto_column(column_name)
       return nil if new_record?
       # Now here's the fun part. We want the selector on PGCrypto columns to do the decryption
@@ -100,4 +112,8 @@ PGCrypto.keys[:public] = {:path => '.pgcrypto'} if File.file?('.pgcrypto')
 if defined? ActiveRecord::Base
   ActiveRecord::Base.extend PGCrypto::ClassMethods
   ActiveRecord::Base.send :include, PGCrypto::InstanceMethods
+  ActiveRecord::Base.class_eval do
+    alias :reload_without_pgcrypto :reload
+    alias :reload :reload_with_pgcrypto
+  end
 end

@@ -1,3 +1,7 @@
+0.2.5
+  * PGCrypto now hooks into ActiveRecord::Base#reload in order to
+    reset encrypted column values as expected when calling reload.
+
 0.2.2
   * Don't try to load columns on new records; should further reduce
     unnecessary database calls!

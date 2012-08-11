@@ -74,5 +74,13 @@ describe PGCrypto do
       model.test_column = 'i am clean'
       model.test_column_changed?.should_not be_true
     end
+
+    it "should reload with the class" do
+      model = PGCryptoTestModel.create!(:test_column => 'i am clean')
+      model.test_column = 'i am dirty'
+      model.reload
+      model.test_column.should == 'i am clean'
+      model.test_column_changed?.should_not be_true
+    end
   end
 end
