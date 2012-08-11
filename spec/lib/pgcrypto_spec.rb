@@ -30,6 +30,7 @@ describe PGCrypto do
     it "be update-able" do
       model = PGCryptoTestModel.create!(:test_column => 'i am test column')
       model.update_attributes!(:test_column => 'but now i am a different column, son').should be_true
+      model.test_column.should == 'but now i am a different column, son'
     end
 
     it "be retrievable at create" do
@@ -40,6 +41,20 @@ describe PGCrypto do
     it "be retrievable after create" do
       model = PGCryptoTestModel.create!(:test_column => 'i should return to you')
       PGCryptoTestModel.find(model.id).test_column.should == 'i should return to you'
+    end
+
+    it "should be retrievable at update" do
+      model = PGCryptoTestModel.create!(:test_column => 'i will update')
+      model.test_column.should == 'i will update'
+      model.update_attributes!(:test_column => 'i updated')
+      model.test_column.should == 'i updated'
+    end
+
+    it "should be retrievable without update" do
+      model = PGCryptoTestModel.create!(:test_column => 'i will update')
+      model.test_column.should == 'i will update'
+      model.test_column = 'i updated'
+      model.test_column.should == 'i updated'
     end
 
     it "be searchable" do
