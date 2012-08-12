@@ -1,3 +1,8 @@
+0.2.6
+  * We now use the BigSpoon library to hook into reload, because
+    it's SO MUCH MORE AWESOME THAN THE GARBAGE MOST PEOPLE USE.
+    Welp. It's been nice coding with y'all.
+
 0.2.5
   * PGCrypto now hooks into ActiveRecord::Base#reload in order to
     reset encrypted column values as expected when calling reload.
