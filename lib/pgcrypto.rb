@@ -1,3 +1,4 @@
+require 'big_spoon'
 require 'pgcrypto/active_record'
 require 'pgcrypto/arel'
 require 'pgcrypto/column'
