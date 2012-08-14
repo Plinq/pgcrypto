@@ -57,6 +57,7 @@ module PGCrypto
             remove_instance_variable("@_pgcrypto_#{column_name}") if defined?(@_pgcrypto_#{column_name})
           else
             @_pgcrypto_#{column_name} ||= pgcrypto_columns.select{|column| column.name == "#{column_name}"}.first || pgcrypto_columns.new(:name => "#{column_name}")
+            pgcrypto_columns.push(@_pgcrypto_#{column_name})
             @_pgcrypto_#{column_name}.value = value
           end
         end
@@ -91,9 +92,9 @@ module PGCrypto
       pgcrypto_column_finder = pgcrypto_columns
       if key = PGCrypto.keys[:private]
         pgcrypto_column_finder = pgcrypto_column_finder.select([
-          %("#{PGCrypto::Column.table_name}"."id"),
+          %w(id owner_id owner_type owner_table).map {|column| %("#{PGCrypto::Column.table_name}"."#{column}")},
           %[pgp_pub_decrypt("#{PGCrypto::Column.table_name}"."value", pgcrypto_keys.#{key.name}#{", '#{key.password}'" if key.password}) AS "value"]
-        ]).joins(%[CROSS JOIN (SELECT #{key.dearmored} AS "#{key.name}") AS pgcrypto_keys])
+        ].flatten).joins(%[CROSS JOIN (SELECT #{key.dearmored} AS "#{key.name}") AS pgcrypto_keys])
       end
       pgcrypto_column_finder.where(:name => column_name).first
     rescue ActiveRecord::StatementInvalid => e

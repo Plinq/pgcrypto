@@ -1,7 +1,7 @@
 source 'http://rubygems.org'
 
 gem 'activerecord', '>= 3.2', :require => 'active_record'
-gem 'big_spoon'
+gem 'big_spoon', '>= 0.2.0'
 
 group :development do
   gem 'jeweler'

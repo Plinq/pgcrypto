@@ -59,6 +59,7 @@ RSpec.configure do |config|
 
     class PGCryptoTestModel < ActiveRecord::Base
       self.table_name = :pgcrypto_test_models
+      pgcrypto :test_column
     end
   end
 
