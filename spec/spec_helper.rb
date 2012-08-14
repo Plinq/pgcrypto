@@ -51,12 +51,8 @@ RSpec.configure do |config|
   end
 
   config.before :each do
-    if example.metadata[:transaction] == false
-      DatabaseCleaner.strategy = :truncation
-      DatabaseCleaner.clean_with :truncation
-    else
-      DatabaseCleaner.strategy = :transaction
-    end
+    DatabaseCleaner.strategy = :transaction
+    DatabaseCleaner.clean_with :transaction
     DatabaseCleaner.start
 
     ActiveRecord::Base.establish_connection(database_config)
