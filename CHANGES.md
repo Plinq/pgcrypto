@@ -1,4 +1,7 @@
 # CHANGELOG
+## 0.3.2
+- Upgrade big_spoon dependency to solve annoying generator bug.
+
 ## 0.3.1
 - Finally solved a large bug with a very simple fix. Looks
   like we're approaching stability, folks!
