@@ -1,4 +1,7 @@
 # CHANGELOG
+## 0.3.3
+- Solved a mass-assignment issue thanks to Brett Levine
+
 ## 0.3.2
 - Upgrade big_spoon dependency to solve annoying generator bug.
 
