@@ -1,6 +1,6 @@
 source 'http://rubygems.org'
 
-gem 'activerecord', '>= 3.2', :require => 'active_record'
+gem 'activerecord', '3.2.7', :require => 'active_record'
 gem 'big_spoon', '>= 0.2.1'
 
 group :development do

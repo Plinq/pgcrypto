@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = "pgcrypto"
-  s.version = "0.3.1"
+  s.version = "0.3.2"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Flip Sasser"]
-  s.date = "2012-08-20"
+  s.date = "2012-08-21"
   s.description = "\n      PGCrypto is an ActiveRecord::Base extension that allows you to asymmetrically\n      encrypt PostgreSQL columns with as little trouble as possible. It's totally\n      freaking rad.\n    "
   s.email = "flip@x451.com"
   s.extra_rdoc_files = [
@@ -52,16 +52,16 @@ Gem::Specification.new do |s|
     s.specification_version = 3
 
     if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
-      s.add_runtime_dependency(%q<activerecord>, [">= 3.2"])
+      s.add_runtime_dependency(%q<activerecord>, ["= 3.2.7"])
       s.add_runtime_dependency(%q<big_spoon>, [">= 0.2.1"])
       s.add_development_dependency(%q<jeweler>, [">= 0"])
     else
-      s.add_dependency(%q<activerecord>, [">= 3.2"])
+      s.add_dependency(%q<activerecord>, ["= 3.2.7"])
       s.add_dependency(%q<big_spoon>, [">= 0.2.1"])
       s.add_dependency(%q<jeweler>, [">= 0"])
     end
   else
-    s.add_dependency(%q<activerecord>, [">= 3.2"])
+    s.add_dependency(%q<activerecord>, ["= 3.2.7"])
     s.add_dependency(%q<big_spoon>, [">= 0.2.1"])
     s.add_dependency(%q<jeweler>, [">= 0"])
   end
