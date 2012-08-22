@@ -1,6 +1,9 @@
 require 'spec_helper'
 
-describe PGCrypto do
+# require 'logger'
+# ActiveRecord::Base.logger = Logger.new(STDOUT)
+
+specs = proc do
   it "should extend ActiveRecord::Base" do
     PGCryptoTestModel.should respond_to(:pgcrypto)
   end
@@ -37,7 +40,7 @@ describe PGCrypto do
     model = PGCryptoTestModel.create!(:test_column => 'i should return to you')
     PGCryptoTestModel.find(model.id).test_column.should == 'i should return to you'
   end
-  
+
   it "should be retrievable at update" do
     model = PGCryptoTestModel.create!(:test_column => 'i will update')
     model.test_column.should == 'i will update'
@@ -52,9 +55,9 @@ describe PGCrypto do
     model.test_column.should == 'i updated'
   end
   
-  it "be searchable" do
+  it "should be searchable" do
     model = PGCryptoTestModel.create!(:test_column => 'i am findable!')
-    PGCryptoTestModel.where(:test_column => model.test_column).count.should == 1
+    PGCryptoTestModel.where(:test_column => model.test_column).should == [model]
   end
   
   it "should track changes" do
@@ -92,10 +95,31 @@ describe PGCrypto do
     model.select_pgcrypto_column(:test_column).should be_nil
   end
   
-  it "plz work" do
+  it "should plz work" do
     model = PGCryptoTestModel.find(PGCryptoTestModel.create!(:test_column => 'one'))
     model.test_column = 'two'
     model.save!
     model.select_pgcrypto_column(:test_column).value.should == 'two'
+  end
+end
+
+keypath = File.expand_path(File.join(File.dirname(__FILE__), '..', 'support'))
+describe PGCrypto do
+  describe "without password-protected keys" do
+    before :all do
+      PGCrypto.keys[:private] = {:path => File.join(keypath, 'private.key')}
+      PGCrypto.keys[:public] = {:path => File.join(keypath, 'public.key')}
+    end
+
+    # instance_eval(&specs)
+  end
+
+  describe "with password-protected keys" do
+    before :each do
+      PGCrypto.keys[:private] = {:path => File.join(keypath, 'private.password.key'), :password => 'password'}
+      PGCrypto.keys[:public] = {:path => File.join(keypath, 'public.password.key'), :password => 'password'}
+    end
+
+    instance_eval(&specs)
   end
 end

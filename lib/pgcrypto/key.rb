@@ -22,6 +22,10 @@ module PGCrypto
       "#{'dearmor(' if armored?}'#{self}'#{')' if armored?}"
     end
 
+    def encrypt(value)
+      %[pgp_pub_encrypt('#{value}', #{dearmored})]
+    end
+
     def initialize(options = {})
       if options.is_a?(String)
         self.value = options
@@ -30,6 +34,10 @@ module PGCrypto
           send("#{key}=", value)
         end
       end
+    end
+
+    def password?
+      ", '#{password}'" if password
     end
 
     def path=(keyfile)

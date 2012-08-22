@@ -1,4 +1,9 @@
 # CHANGELOG
+## 0.3.4
+- Rewrote specs and found a bug in password-protected keys;
+  fixed now! Thanks again to Brett for helping me find the
+  problem.
+
 ## 0.3.3
 - Solved a mass-assignment issue thanks to Brett Levine
 

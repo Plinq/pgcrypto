@@ -54,7 +54,7 @@ ActiveRecord::ConnectionAdapters::PostgreSQLAdapter.class_eval do
           next unless encrypted_columns[child.left.name.to_s]
           joins.push(child.left.name.to_s) unless joins.include?(child.left.name.to_s)
           child.left = Arel::Nodes::SqlLiteral.new(%[
-            pgp_pub_decrypt("#{PGCrypto::Column.table_name}_#{child.left.name}"."value", pgcrypto_keys.#{key.name})
+            pgp_pub_decrypt("#{PGCrypto::Column.table_name}_#{child.left.name}"."value", pgcrypto_keys.#{key.name}#{key.password?})
           ])
         end if where.respond_to?(:children)
       end

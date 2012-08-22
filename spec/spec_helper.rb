@@ -11,8 +11,6 @@ require 'simplecov'
 
 # Requier and configure PGCrypto
 require 'pgcrypto'
-PGCrypto.keys[:private] = {:path => File.join(File.dirname(__FILE__), 'support', 'private.key')}
-PGCrypto.keys[:public] = {:path => File.join(File.dirname(__FILE__), 'support', 'public.key')}
 
 RSpec.configure do |config|
   database_config = {:adapter => 'postgresql', :database => 'pgcrypto_test', :encoding => 'utf8', :host => 'localhost'}
