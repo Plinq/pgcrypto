@@ -14,29 +14,29 @@ specs = proc do
     model.should respond_to(:test_column=)
   end
   
-  it "be settable on create" do
+  it "should be settable on create" do
     model = PGCryptoTestModel.new(:test_column => 'this is a test')
     model.save!.should be_true
   end
   
-  it "be settable on update" do
+  it "should be settable on update" do
     model = PGCryptoTestModel.create!
     model.test_column = 'this is another test'
     model.save!.should be_true
   end
   
-  it "be update-able" do
+  it "should be update-able" do
     model = PGCryptoTestModel.create!(:test_column => 'i am test column')
     model.update_attributes!(:test_column => 'but now i am a different column, son').should be_true
     model.test_column.should == 'but now i am a different column, son'
   end
   
-  it "be retrievable at create" do
+  it "should be retrievable at create" do
     model = PGCryptoTestModel.create!(:test_column => 'i am test column')
     model.test_column.should == 'i am test column'
   end
   
-  it "be retrievable after create" do
+  it "should be retrievable after create" do
     model = PGCryptoTestModel.create!(:test_column => 'i should return to you')
     PGCryptoTestModel.find(model.id).test_column.should == 'i should return to you'
   end
@@ -117,7 +117,16 @@ describe PGCrypto do
   describe "with password-protected keys" do
     before :each do
       PGCrypto.keys[:private] = {:path => File.join(keypath, 'private.password.key'), :password => 'password'}
-      PGCrypto.keys[:public] = {:path => File.join(keypath, 'public.password.key'), :password => 'password'}
+      PGCrypto.keys[:public] = {:path => File.join(keypath, 'public.password.key')}
+    end
+
+    instance_eval(&specs)
+  end
+
+  describe "with Brett's keys" do
+    before :each do
+      PGCrypto.keys[:private] = {:path => File.join(keypath, 'private.brett.key'), :password => '4a13zhUF'}
+      PGCrypto.keys[:public] = {:path => File.join(keypath, 'public.brett.key')}
     end
 
     instance_eval(&specs)

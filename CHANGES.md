@@ -1,4 +1,8 @@
 # CHANGELOG
+## 0.3.5
+- Fixed ActiveRecord dependency issue (now handles any
+  version of ActiveRecord from 3.2 to current)
+
 ## 0.3.4
 - Rewrote specs and found a bug in password-protected keys;
   fixed now! Thanks again to Brett for helping me find the
