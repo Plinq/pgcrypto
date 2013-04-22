@@ -58,11 +58,12 @@ ActiveRecord::ConnectionAdapters::PostgreSQLAdapter.class_eval do
         end
         # Now loop through the children to encrypt them for the SELECT
         children.each do |child|
-          next unless encrypted_columns[child.left.name.to_s]
+          column_options = encrypted_columns[child.left.name.to_s]
+          next unless column_options
           joins.push(child.left.name.to_s) unless joins.include?(child.left.name.to_s)
-          child.left = Arel::Nodes::SqlLiteral.new(%[
-            pgp_pub_decrypt("#{PGCrypto::Column.table_name}_#{child.left.name}"."value", pgcrypto_keys.#{key.name}#{key.password?})
-          ])
+          sql_string = %(pgp_pub_decrypt("#{PGCrypto::Column.table_name}_#{child.left.name}"."value", pgcrypto_keys.#{key.name}#{key.password?}))
+          sql_string << "::#{column_options[:column_type]}" if column_options[:column_type]
+          child.left = Arel::Nodes::SqlLiteral.new(sql_string)
         end
       end
     end
