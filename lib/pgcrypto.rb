@@ -1,4 +1,3 @@
-require 'big_spoon'
 require 'pgcrypto/active_record'
 require 'pgcrypto/arel'
 require 'pgcrypto/column'
@@ -25,14 +24,6 @@ module PGCrypto
 
       has_many :pgcrypto_columns, :as => :owner, :autosave => true, :class_name => 'PGCrypto::Column', :dependent => :delete_all
 
-      hooks do
-        before(:reload) do
-          self.class.pgcrpyto_columns.each do |column_name, options|
-            reset_attribute! column_name
-            changed_attributes.delete(column_name)
-          end
-        end
-      end
 
       pgcrypto_column_names.map(&:to_s).each do |column_name|
         # Stash the encryption type in our module so various monkeypatches can access it later!
@@ -83,6 +74,20 @@ module PGCrypto
   end
 
   module InstanceMethods
+    def self.included(base)
+      base.class_eval do
+        alias original_reload reload
+
+        def reload
+          self.class.pgcrpyto_columns.each do |column_name, options|
+            reset_attribute! column_name
+            changed_attributes.delete(column_name)
+          end
+          original_reload
+        end
+      end
+    end
+
     def select_pgcrypto_column(column_name)
       return nil if new_record?
       # Now here's the fun part. We want the selector on PGCrypto columns to do the decryption
