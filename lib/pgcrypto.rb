@@ -45,7 +45,7 @@ module PGCrypto
           attribute_will_change!(:#{column_name}) if value != @_pgcrypto_#{column_name}.try(:value)
           if value.nil?
             pgcrypto_columns.select{|column| column.name == "#{column_name}"}.each(&:mark_for_destruction)
-            remove_instance_variable("@_pgcrypto_#{column_name}") if defined?(@_pgcrypto_#{column_name})
+            @_pgcrypto_#{column_name} = nil
           else
             @_pgcrypto_#{column_name} ||= pgcrypto_columns.select{|column| column.name == "#{column_name}"}.first || pgcrypto_columns.new(:name => "#{column_name}")
             pgcrypto_columns.push(@_pgcrypto_#{column_name})
