@@ -6,7 +6,7 @@ ActiveRecord::ConnectionAdapters::PostgreSQLAdapter.class_eval do
   end
 
   def to_sql(arel, *args)
-    arel = Marshal.load(Marshal.dump(arel)) # TODO: Need a better way to avoid mutation
+    arel = Marshal.load(Marshal.dump(arel)) rescue arel = arel.dup # TODO: Need a better way to avoid mutation
     case arel
     when Arel::InsertManager
       pgcrypto_tweak_insert(arel)
