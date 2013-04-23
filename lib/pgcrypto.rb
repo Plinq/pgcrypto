@@ -24,7 +24,6 @@ module PGCrypto
 
       has_many :pgcrypto_columns, :as => :owner, :autosave => true, :class_name => 'PGCrypto::Column', :dependent => :delete_all
 
-
       pgcrypto_column_names.map(&:to_s).each do |column_name|
         # Stash the encryption type in our module so various monkeypatches can access it later!
         PGCrypto[table_name][column_name] = options.symbolize_keys
