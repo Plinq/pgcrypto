@@ -6,6 +6,7 @@ ActiveRecord::ConnectionAdapters::PostgreSQLAdapter.class_eval do
   end
 
   def to_sql(arel, *args)
+    arel = Marshal.load(Marshal.dump(arel)) rescue arel = arel.dup # TODO: Need a better way to avoid mutation
     case arel
     when Arel::InsertManager
       pgcrypto_tweak_insert(arel)
@@ -49,14 +50,23 @@ ActiveRecord::ConnectionAdapters::PostgreSQLAdapter.class_eval do
       # We loop through each WHERE specification to determine whether or not the
       # PGCrypto column should be JOIN'd upon; in which case, we, like, do it.
       core.wheres.each do |where|
+        if where.respond_to?(:children)
+          children = where.children
+        elsif where.respond_to?(:expr)
+          children = [where.expr]
+        else
+          children = []
+        end
         # Now loop through the children to encrypt them for the SELECT
-        where.children.each do |child|
-          next unless encrypted_columns[child.left.name.to_s]
+        children.each do |child|
+          next unless child.respond_to?(:left) and child.left.respond_to?(:name)
+          column_options = encrypted_columns[child.left.name.to_s]
+          next unless column_options
           joins.push(child.left.name.to_s) unless joins.include?(child.left.name.to_s)
-          child.left = Arel::Nodes::SqlLiteral.new(%[
-            pgp_pub_decrypt("#{PGCrypto::Column.table_name}_#{child.left.name}"."value", pgcrypto_keys.#{key.name}#{key.password?})
-          ])
-        end if where.respond_to?(:children)
+          sql_string = %(pgp_pub_decrypt("#{PGCrypto::Column.table_name}_#{child.left.name}"."value", pgcrypto_keys.#{key.name}#{key.password?}))
+          sql_string << "::#{column_options[:column_type]}" if column_options[:column_type]
+          child.left = Arel::Nodes::SqlLiteral.new(sql_string)
+        end
       end
     end
     if joins.any?

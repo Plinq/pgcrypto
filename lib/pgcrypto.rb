@@ -1,4 +1,3 @@
-require 'big_spoon'
 require 'pgcrypto/active_record'
 require 'pgcrypto/arel'
 require 'pgcrypto/column'
@@ -25,15 +24,6 @@ module PGCrypto
 
       has_many :pgcrypto_columns, :as => :owner, :autosave => true, :class_name => 'PGCrypto::Column', :dependent => :delete_all
 
-      hooks do
-        before(:reload) do
-          self.class.pgcrpyto_columns.each do |column_name, options|
-            reset_attribute! column_name
-            changed_attributes.delete(column_name)
-          end
-        end
-      end
-
       pgcrypto_column_names.map(&:to_s).each do |column_name|
         # Stash the encryption type in our module so various monkeypatches can access it later!
         PGCrypto[table_name][column_name] = options.symbolize_keys
@@ -54,7 +44,7 @@ module PGCrypto
           attribute_will_change!(:#{column_name}) if value != @_pgcrypto_#{column_name}.try(:value)
           if value.nil?
             pgcrypto_columns.select{|column| column.name == "#{column_name}"}.each(&:mark_for_destruction)
-            remove_instance_variable("@_pgcrypto_#{column_name}") if defined?(@_pgcrypto_#{column_name})
+            @_pgcrypto_#{column_name} = nil
           else
             @_pgcrypto_#{column_name} ||= pgcrypto_columns.select{|column| column.name == "#{column_name}"}.first || pgcrypto_columns.new(:name => "#{column_name}")
             pgcrypto_columns.push(@_pgcrypto_#{column_name})
@@ -83,6 +73,20 @@ module PGCrypto
   end
 
   module InstanceMethods
+    def self.included(base)
+      base.class_eval do
+        alias original_reload reload
+
+        def reload(*args)
+          self.class.pgcrpyto_columns.each do |column_name, options|
+            reset_attribute! column_name
+            changed_attributes.delete(column_name)
+          end
+          original_reload(*args)
+        end
+      end
+    end
+
     def select_pgcrypto_column(column_name)
       return nil if new_record?
       # Now here's the fun part. We want the selector on PGCrypto columns to do the decryption
@@ -92,7 +96,7 @@ module PGCrypto
       pgcrypto_column_finder = pgcrypto_columns
       if key = PGCrypto.keys[:private]
         pgcrypto_column_finder = pgcrypto_column_finder.select([
-          %w(id owner_id owner_type owner_table).map {|column| %("#{PGCrypto::Column.table_name}"."#{column}")},
+          %w(id owner_id owner_type owner_table name).map {|column| %("#{PGCrypto::Column.table_name}"."#{column}")},
           %[pgp_pub_decrypt("#{PGCrypto::Column.table_name}"."value", pgcrypto_keys.#{key.name}#{key.password?}) AS "value"]
         ].flatten).joins(%[CROSS JOIN (SELECT #{key.dearmored} AS "#{key.name}") AS pgcrypto_keys])
       end
