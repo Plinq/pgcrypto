@@ -78,12 +78,12 @@ module PGCrypto
       base.class_eval do
         alias original_reload reload
 
-        def reload
+        def reload(*args)
           self.class.pgcrpyto_columns.each do |column_name, options|
             reset_attribute! column_name
             changed_attributes.delete(column_name)
           end
-          original_reload
+          original_reload(*args)
         end
       end
     end

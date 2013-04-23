@@ -58,6 +58,7 @@ ActiveRecord::ConnectionAdapters::PostgreSQLAdapter.class_eval do
         end
         # Now loop through the children to encrypt them for the SELECT
         children.each do |child|
+          next unless child.respond_to?(:left) and child.left.respond_to?(:name)
           column_options = encrypted_columns[child.left.name.to_s]
           next unless column_options
           joins.push(child.left.name.to_s) unless joins.include?(child.left.name.to_s)
