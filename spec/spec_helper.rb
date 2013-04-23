@@ -44,6 +44,15 @@ RSpec.configure do |config|
         create_table :pgcrypto_test_models, :force => true do |t|
           t.string :name, :limit => 32
         end
+
+        create_table :foos, force: true do |t|
+          t.timestamps
+        end
+
+        create_table :bars, force: true do |t|
+          t.integer :foo_id
+          t.timestamps
+        end
       end
     end
   end
@@ -58,6 +67,16 @@ RSpec.configure do |config|
     class PGCryptoTestModel < ActiveRecord::Base
       self.table_name = :pgcrypto_test_models
       pgcrypto :test_column
+    end
+
+    class Foo < ActiveRecord::Base
+      pgcrypto :address
+      has_many :bars
+    end
+
+    class Bar < ActiveRecord::Base
+      pgcrypto :something
+      belongs_to :foo
     end
   end
 

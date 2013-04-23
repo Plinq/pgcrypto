@@ -96,7 +96,7 @@ module PGCrypto
       pgcrypto_column_finder = pgcrypto_columns
       if key = PGCrypto.keys[:private]
         pgcrypto_column_finder = pgcrypto_column_finder.select([
-          %w(id owner_id owner_type owner_table).map {|column| %("#{PGCrypto::Column.table_name}"."#{column}")},
+          %w(id owner_id owner_type owner_table name).map {|column| %("#{PGCrypto::Column.table_name}"."#{column}")},
           %[pgp_pub_decrypt("#{PGCrypto::Column.table_name}"."value", pgcrypto_keys.#{key.name}#{key.password?}) AS "value"]
         ].flatten).joins(%[CROSS JOIN (SELECT #{key.dearmored} AS "#{key.name}") AS pgcrypto_keys])
       end
