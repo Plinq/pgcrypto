@@ -1,6 +1,9 @@
 module PGCrypto
   class Column < ActiveRecord::Base
-    attr_accessible :name
+    if defined?(Rails) && Rails::VERSION::MAJOR < 4
+      attr_accessible :name
+    end
+
     self.table_name = 'pgcrypto_columns'
     before_save :set_owner_table
     belongs_to :owner, :autosave => false, :inverse_of => :pgcrypto_columns, :polymorphic => true
