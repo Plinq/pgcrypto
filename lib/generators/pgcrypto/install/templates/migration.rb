@@ -8,7 +8,7 @@ class InstallPgcrypto < ActiveRecord::Migration
     end
     add_index :pgcrypto_columns, [:owner_id, :owner_type, :name], :name => :pgcrypto_type_finder
     add_index :pgcrypto_columns, [:owner_id, :owner_table, :name], :name => :pgcrypto_table_finder
-    execute("CREATE EXTENSION IF NOT EXISTS pgcrypto")
+    execute "CREATE EXTENSION IF NOT EXISTS pgcrypto"
   end
 
   def down

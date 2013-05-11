@@ -73,7 +73,7 @@ module PGCrypto
       # If any columns are set to be included in the parent record's finder,
       # we'll go ahead and add 'em!
       if PGCrypto[table_name].any?{|column, options| options[:include] }
-        default_scope includes(:pgcrypto_columns)
+        default_scope { includes(:pgcrypto_columns) }
       end
     end
 
