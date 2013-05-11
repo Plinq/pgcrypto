@@ -1,12 +1,10 @@
 require 'rails/generators/migration'
-require 'rails/generators/active_record/migration'
+require 'rails/generators/active_record'
 
 module Pgcrypto
   module Generators
     class InstallGenerator < Rails::Generators::Base
       include Rails::Generators::Migration
-      extend ActiveRecord::Generators::Migration
-
       source_root File.expand_path('../templates', __FILE__)
 
       def copy_migration
@@ -15,6 +13,10 @@ module Pgcrypto
 
       def create_initializer
         copy_file("initializer.rb", "config/initializers/pgcrypto.rb")
+      end
+
+      def self.next_migration_number(dirname)
+        ActiveRecord::Generators::Base.next_migration_number(dirname)
       end
     end
   end

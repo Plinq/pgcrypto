@@ -8,7 +8,7 @@ module PGCrypto
     before_save :set_owner_table
     belongs_to :owner, :autosave => false, :inverse_of => :pgcrypto_columns, :polymorphic => true
 
-    default_scope select(%w(id owner_id owner_type owner_table))
+    default_scope ->{ select(%w(id owner_id owner_type owner_table)) }
 
     protected
     def set_owner_table
