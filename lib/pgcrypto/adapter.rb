@@ -106,6 +106,8 @@ module PGCrypto
       untouched_columns = columns.keys.map(&:to_s)
 
       selects.each_with_index do |select, i|
+        next unless select.respond_to?(:name)
+
         select_name = select.name.to_s
         if untouched_columns.include?(select_name)
           key = columns[select_name.to_sym][:private] || PGCrypto.keys[:private]
@@ -116,7 +118,7 @@ module PGCrypto
         end
       end
 
-      splat_projection = selects.find { |select| select.name == '*' }
+      splat_projection = selects.find { |select| select.respond_to?(:name) && select.name == '*' }
       if untouched_columns.any? && splat_projection
         untouched_columns.each do |column|
           key = columns[column.to_sym][:private] || PGCrypto.keys[:private]
@@ -136,7 +138,7 @@ module PGCrypto
         if where.respond_to?(:children)
           # Loop through the children to replace them with a decrypted counterpart
           where.children.each do |child|
-            next unless options = columns[child.left.name.to_s]
+            next unless child.respond_to?(:left) && options = columns[child.left.name.to_s]
             key = options[:private] || PGCrypto.keys[:private]
             child.left = pgcrypto_decrypt_column(table_name, child.left.name, key)
           end
