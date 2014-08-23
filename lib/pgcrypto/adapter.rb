@@ -28,11 +28,7 @@ module PGCrypto
       when Arel::UpdateManager
         pgcrypto_update(arel)
       end
-      result = super(arel, *args)
-      if arel.is_a? Arel::SelectManager
-        #binding.pry
-      end
-      result
+      super(arel, *args)
     end
 
     private
@@ -65,17 +61,17 @@ module PGCrypto
     end
 
     def pgcrypto_select(arel)
-      # We start by looping through each "core," which is just
-      # a SelectStatement and correcting plain-text queries
-      # against an encrypted column...
+      # We start by looping through each "core," which is just a
+      # SelectStatement and correcting plain-text queries against an encrypted
+      # column...
       arel.ast.cores.each do |core|
         next unless core.is_a?(Arel::Nodes::SelectCore)
 
         pgcrypto_update_selects(core, core.projections) if core.projections
         pgcrypto_update_selects(core, core.having) if core.having
 
-        # Loop through each WHERE to determine whether or not we need to
-        # refer to its decrypted counterpart
+        # Loop through each WHERE to determine whether or not we need to refer
+        # to its decrypted counterpart
         pgcrypto_update_wheres(core)
       end
     end
@@ -136,7 +132,8 @@ module PGCrypto
 
       core.wheres.each do |where|
         if where.respond_to?(:children)
-          # Loop through the children to replace them with a decrypted counterpart
+          # Loop through the children to replace them with a decrypted
+          # counterpart
           where.children.each do |child|
             next unless child.respond_to?(:left) && options = columns[child.left.name.to_s]
             key = options[:private] || PGCrypto.keys[:private]
