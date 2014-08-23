@@ -12,13 +12,13 @@ Arel::Visitors::PostgreSQL.class_eval do
     alias :visit_Arel_Nodes_Assignment_without_pgcrypto :visit_Arel_Nodes_Assignment
   end
 
-  def visit_Arel_Nodes_Assignment(assignment)
+  def visit_Arel_Nodes_Assignment(assignment, *args)
     # Hijack the normally inoccuous assignment that happens, seeing as how
-    # Arel normally forwards this shit to someone else and I hate it. 
+    # Arel normally forwards this shit to someone else and I hate it.
     if assignment.left.relation.name == PGCrypto::Column.table_name && assignment.left.name == 'value'
       "#{visit(assignment.left)} = #{visit(assignment.right)}"
     else
-      visit_Arel_Nodes_Assignment_without_pgcrypto(assignment)
+      visit_Arel_Nodes_Assignment_without_pgcrypto(assignment, *args)
     end
   end
 end
