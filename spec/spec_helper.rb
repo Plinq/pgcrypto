@@ -13,7 +13,7 @@ require 'simplecov'
 require 'pgcrypto'
 
 RSpec.configure do |config|
-  database_config = {:adapter => 'postgresql', :database => 'pgcrypto_test', :encoding => 'utf8', :host => 'localhost'}
+  database_config = {:adapter => 'pgcrypto', :database => 'pgcrypto_test', :encoding => 'utf8', :host => 'localhost'}
   postgres_config = database_config.merge(:database => 'postgres', :schema_search_path => 'public')
 
   # Set up the database to handle pgcrypto functions and the schema for
@@ -30,19 +30,13 @@ RSpec.configure do |config|
 
     silence_stream(STDOUT) do
       # ...and load in the pgcrypto extension
-      ActiveRecord::Base.connection.execute(%[CREATE EXTENSION pgcrypto])
+      ActiveRecord::Base.connection.execute(%[CREATE EXTENSION pgcrypto]) rescue nil
 
       # ...and then set up the pgcrypto_columns and pgcrypto_test_models fun
       ActiveRecord::Schema.define do
-        create_table :pgcrypto_columns, :force => true do |t|
-          t.belongs_to :owner, :polymorphic => true
-          t.string :owner_table, :limit => 32
-          t.string :name, :limit => 64
-          t.binary :value
-        end
-
         create_table :pgcrypto_test_models, :force => true do |t|
           t.string :name, :limit => 32
+          t.pgcrypto :encrypted_text
         end
       end
     end
@@ -57,7 +51,7 @@ RSpec.configure do |config|
 
     class PGCryptoTestModel < ActiveRecord::Base
       self.table_name = :pgcrypto_test_models
-      pgcrypto :test_column
+      pgcrypto :encrypted_text
     end
   end
 

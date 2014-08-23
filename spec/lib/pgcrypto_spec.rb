@@ -4,102 +4,98 @@ require 'spec_helper'
 # ActiveRecord::Base.logger = Logger.new(STDOUT)
 
 specs = proc do
-  it "should extend ActiveRecord::Base" do
-    PGCryptoTestModel.should respond_to(:pgcrypto)
+
+  let(:stored_raw) {
+    connection = PGCryptoTestModel.connection
+    result = connection.select_one("SELECT encrypted_text FROM pgcrypto_test_models LIMIT 1")
+    result['encrypted_text']
+  }
+
+  # Default test text
+  let(:text) { "text to encrypt" }
+  # That text as it appears un-encrypted in a binary column - we'll compare
+  # this to what gets set to ensure the text is properly encrypted
+  let(:text_raw) { "\\x7465787420746f20656e6372797074" }
+
+  let(:text_2) { "something else entirely" }
+  let(:text_2_raw) { "\\x736f6d657468696e6720656c736520656e746972656c79" }
+
+  it "extends ActiveRecord::Base" do
+    expect(PGCryptoTestModel).to respond_to(:pgcrypto)
   end
 
-  it "should have readers and writers" do
-    model = PGCryptoTestModel.new
-    model.should respond_to(:test_column)
-    model.should respond_to(:test_column=)
+  it "encrypts text on insert" do
+    PGCryptoTestModel.create!(encrypted_text: text)
+    expect(stored_raw).not_to eq(text_raw)
   end
 
-  it "should be settable on create" do
-    model = PGCryptoTestModel.new(:test_column => 'this is a test')
-    expect(model.save!).to eq(true)
+  it "encrypts new text on update" do
+    PGCryptoTestModel.create.tap do |model|
+      model.encrypted_text = text
+      model.save!
+    end
+    expect(stored_raw).not_to eq(text_raw)
   end
 
-  it "should be settable on update" do
-    model = PGCryptoTestModel.create!
-    model.test_column = 'this is another test'
-    expect(model.save!).to eq(true)
+  it "encrypts changed text on update" do
+    PGCryptoTestModel.create!(encrypted_text: text).tap do |model|
+      model.update_attributes!(encrypted_text: text_2)
+    end
+    expect(stored_raw).not_to eq(text_2_raw)
   end
 
-  it "should be update-able" do
-    model = PGCryptoTestModel.create!(:test_column => 'i am test column')
-    model.update_attributes!(:test_column => 'but now i am a different column, son').should be_true
-    model.test_column.should == 'but now i am a different column, son'
+  it "keeps plaintext versions of the encrypted text" do
+    model = PGCryptoTestModel.create!(encrypted_text: text)
+    expect(model.encrypted_text).to eq(text)
   end
 
-  it "should be retrievable at create" do
-    model = PGCryptoTestModel.create!(:test_column => 'i am test column')
-    model.test_column.should == 'i am test column'
+  it "decrypts text when it is selected" do
+    model = PGCryptoTestModel.create!(encrypted_text: text)
+    expect(PGCryptoTestModel.find(model.id).encrypted_text).to eq(text)
   end
 
-  it "should be retrievable after create" do
-    model = PGCryptoTestModel.create!(:test_column => 'i should return to you')
-    PGCryptoTestModel.find(model.id).test_column.should == 'i should return to you'
+  it "retrieves decrypted text at update" do
+    model = PGCryptoTestModel.create!(:encrypted_text => 'i will update')
+    expect(PGCryptoTestModel.find(model.id).encrypted_text).to eq('i will update')
+    model.update_attributes!(:encrypted_text => 'i updated')
+    expect(PGCryptoTestModel.find(model.id).encrypted_text).to eq('i updated')
   end
 
-  it "should be retrievable at update" do
-    model = PGCryptoTestModel.create!(:test_column => 'i will update')
-    model.test_column.should == 'i will update'
-    model.update_attributes!(:test_column => 'i updated')
-    model.test_column.should == 'i updated'
+  it "retrieves decrypted text without update" do
+    model = PGCryptoTestModel.create!(:encrypted_text => 'i will update')
+    expect(PGCryptoTestModel.find(model.id).encrypted_text).to eq('i will update')
+    model.encrypted_text = 'i updated'
+    expect(model.encrypted_text).to eq('i updated')
   end
 
-  it "should be retrievable without update" do
-    model = PGCryptoTestModel.create!(:test_column => 'i will update')
-    model.test_column.should == 'i will update'
-    model.test_column = 'i updated'
-    model.test_column.should == 'i updated'
+  it "supports querying encrypted columns transparently" do
+    model = PGCryptoTestModel.create!(:encrypted_text => 'i am findable!')
+    expect(PGCryptoTestModel.where(encrypted_text: model.encrypted_text)).to eq([model])
   end
 
-  it "should be searchable" do
-    model = PGCryptoTestModel.create!(:test_column => 'i am findable!')
-    PGCryptoTestModel.where(:test_column => model.test_column).should == [model]
+  it "tracks changes" do
+    model = PGCryptoTestModel.create!(:encrypted_text => 'i am clean')
+    model.encrypted_text = "now i'm not!"
+    expect(model.encrypted_text_changed?).to be_truthy
   end
 
-  it "should track changes" do
-    model = PGCryptoTestModel.create!(:test_column => 'i am clean')
-    model.test_column = "now i'm not!"
-    model.test_column_changed?.should be_true
+  it "is not dirty if attributes are unchanged" do
+    model = PGCryptoTestModel.create!(:encrypted_text => 'i am clean')
+    model.encrypted_text = 'i am clean'
+    expect(model.encrypted_text_changed?).not_to be_truthy
   end
 
-  it "should not be dirty if unchanged" do
-    model = PGCryptoTestModel.create!(:test_column => 'i am clean')
-    model.test_column = 'i am clean'
-    model.test_column_changed?.should_not be_true
-  end
-
-  it "should reload with the class" do
-    model = PGCryptoTestModel.create!(:test_column => 'i am clean')
-    model.test_column = 'i am dirty'
+  it "reloads with the class" do
+    model = PGCryptoTestModel.create!(:encrypted_text => 'i am clean')
+    model.encrypted_text = 'i am dirty'
     model.reload
-    model.test_column.should == 'i am clean'
-    model.test_column_changed?.should_not be_true
+    expect(model.encrypted_text).to eq('i am clean')
+    expect(model.encrypted_text_changed?).not_to be_truthy
   end
 
-  it "should allow direct setting of values as well" do
-    model = PGCryptoTestModel.create!(:test_column => 'one')
-    model.test_column.should == 'one'
-    model.test_column = 'two'
-    model.save!.should be_true
-    model.select_pgcrypto_column(:test_column).value.should == 'two'
-  end
-
-  it "should delete the column when I set the value to nil" do
-    model = PGCryptoTestModel.create!(:test_column => 'one')
-    model.test_column = nil
-    model.save!
-    model.select_pgcrypto_column(:test_column).should be_nil
-  end
-
-  it "should plz work" do
-    model = PGCryptoTestModel.find(PGCryptoTestModel.create!(:test_column => 'one'))
-    model.test_column = 'two'
-    model.save!
-    model.select_pgcrypto_column(:test_column).value.should == 'two'
+  it "decrypts direct selects" do
+    model = PGCryptoTestModel.create!(:encrypted_text => 'to be selected...')
+    expect(PGCryptoTestModel.select(:id, :encrypted_text).where(id: model.id).first).to eq(model)
   end
 end
 
@@ -114,21 +110,12 @@ describe PGCrypto do
      instance_eval(&specs)
   end
 
-  #describe "with password-protected keys" do
-    #before :each do
-      #PGCrypto.keys[:private] = {:path => File.join(keypath, 'private.password.key'), :password => 'password'}
-      #PGCrypto.keys[:public] = {:path => File.join(keypath, 'public.password.key')}
-    #end
+  describe "with password-protected keys" do
+    before :each do
+      PGCrypto.keys[:private] = {:path => File.join(keypath, 'private.password.key'), :password => 'password'}
+      PGCrypto.keys[:public] = {:path => File.join(keypath, 'public.password.key')}
+    end
 
-    #instance_eval(&specs)
-  #end
-
-  #describe "with Brett's keys" do
-    #before :each do
-      #PGCrypto.keys[:private] = {:path => File.join(keypath, 'private.brett.key'), :password => '4a13zhUF'}
-      #PGCrypto.keys[:public] = {:path => File.join(keypath, 'public.brett.key')}
-    #end
-
-    #instance_eval(&specs)
-  #end
+    instance_eval(&specs)
+  end
 end
