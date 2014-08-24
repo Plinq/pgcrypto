@@ -5,6 +5,7 @@ require 'simplecov'
 $LOAD_PATH.unshift(File.expand_path(File.join('..', 'lib'), File.dirname(__FILE__)))
 
 require 'database_cleaner'
+require 'pry'
 
 gem 'activerecord', ENV.fetch('ACTIVE_RECORD_VERSION', '>= 4.0')
 require 'active_record'
