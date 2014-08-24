@@ -1,0 +1,8 @@
+Description:
+    Generates the PGCrypto upgrade-from-0.3.x migration
+
+Example:
+    rails generate pgcrypto:install
+
+    This will create:
+        db/migrate/XXXXXX_upgrade_pgcrypto_to_0_4_0.rb

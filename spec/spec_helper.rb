@@ -1,24 +1,28 @@
+require 'rubygems'
+require 'simplecov'
+
 # Add lib/ to the load path
 $LOAD_PATH.unshift(File.expand_path(File.join('..', 'lib'), File.dirname(__FILE__)))
 
-# Load up our Gemfile
-require 'rubygems'
-require 'bundler/setup'
-Bundler.require(:default, :test)
+require 'database_cleaner'
+require 'pry'
 
-# Enable coverage reporting
-require 'simplecov'
-
-# Requier and configure PGCrypto
+gem 'activerecord', ENV.fetch('ACTIVE_RECORD_VERSION', '>= 4.0')
+require 'active_record'
 require 'pgcrypto'
 
 RSpec.configure do |config|
-  database_config = {:adapter => 'pgcrypto', :database => 'pgcrypto_test', :encoding => 'utf8', :host => 'localhost'}
+  database_config = {
+    adapter: 'pgcrypto',
+    database: '__pgcrypto_gem_test',
+    encoding: 'utf8',
+    host: 'localhost'
+  }
   postgres_config = database_config.merge(:database => 'postgres', :schema_search_path => 'public')
 
   # Set up the database to handle pgcrypto functions and the schema for
   # our tests
-  config.before :all do
+  config.before :suite do
     # Connect to the local postgres schema database
     ActiveRecord::Base.establish_connection(postgres_config)
 
@@ -36,32 +40,33 @@ RSpec.configure do |config|
       ActiveRecord::Schema.define do
         create_table :pgcrypto_test_models, :force => true do |t|
           t.string :name, :limit => 32
-          t.pgcrypto :encrypted_text
+          t.binary :encrypted_text
         end
       end
     end
-  end
-
-  config.before :each do
-    DatabaseCleaner.strategy = :transaction
-    DatabaseCleaner.clean_with :transaction
-    DatabaseCleaner.start
 
     ActiveRecord::Base.establish_connection(database_config)
 
-    class PGCryptoTestModel < ActiveRecord::Base
-      self.table_name = :pgcrypto_test_models
-      pgcrypto :encrypted_text
-    end
+    DatabaseCleaner.strategy = :transaction
   end
 
-  config.after :all do
-    # Drop the database when we exist
-    ActiveRecord::Base.establish_connection(postgres_config)
-    ActiveRecord::Base.connection.drop_database(database_config[:database]) rescue nil
+  config.before :each do
+    DatabaseCleaner.start
+
+    class PGCryptoTestModel < ActiveRecord::Base
+      self.table_name = :pgcrypto_test_models
+      has_encrypted_column :encrypted_text
+    end
   end
 
   config.after :each do
     DatabaseCleaner.clean
   end
+
+  config.after :suite do
+    # Drop the database when we exit
+    ActiveRecord::Base.establish_connection(postgres_config)
+    ActiveRecord::Base.connection.drop_database(database_config[:database]) rescue nil
+  end
+
 end

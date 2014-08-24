@@ -1,22 +1,26 @@
 require 'pgcrypto'
 
 module PGCrypto
-  class Adapter < PGCrypto.base_adapter
+  def self.build_adapter!
+    Class.new(PGCrypto.base_adapter) do
+      include PGCrypto::AdapterMethods
+    end
+  end
 
+  def self.rebuild_adapter!
+    remove_const(:Adapter) if const_defined? :Adapter
+    const_set(:Adapter, build_adapter!)
+  end
+
+  module AdapterMethods
     ADAPTER_NAME = 'PGCrypto'
 
-    ColumnMethods.module_eval do
-      def pgcrypto(*args)
-        options = args.extract_options!
-        column(args[0], 'binary', options)
+    def quote(*args, &block)
+      if args.first.is_a?(Arel::Nodes::SqlLiteral)
+        args.first
+      else
+        super
       end
-    end
-
-    def native_database_types(*args, &block)
-      types = super
-      {
-        pgcrypto: types[:binary]
-      }.merge(types)
     end
 
     def to_sql(arel, *args)
@@ -41,7 +45,11 @@ module PGCrypto
     end
 
     def pgcrypto_encrypt_string(string, key)
-      string = quote_string(string)
+      if string.is_a?(String)
+        string = quote(string)
+      else
+        string = quote_string(string)
+      end
       encryption_instruction = %[pgp_pub_encrypt(#{string}, #{key.dearmored})]
       Arel::Nodes::SqlLiteral.new(encryption_instruction)
     end
@@ -138,10 +146,17 @@ module PGCrypto
             next unless child.respond_to?(:left) && options = columns[child.left.name.to_s]
             key = options[:private] || PGCrypto.keys[:private]
             child.left = pgcrypto_decrypt_column(table_name, child.left.name, key)
+            if child.right.is_a?(String)
+              # Prevent ActiveRecord from re-casting this as binary text
+              child.right = Arel::Nodes::SqlLiteral.new("'#{quote_string(child.right)}'")
+            end
           end
         end
       end
     end
 
   end
+
+  Adapter = build_adapter!
+
 end

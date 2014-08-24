@@ -1,11 +1,8 @@
-require 'rails/generators/migration'
-require 'rails/generators/active_record/migration'
+require 'pgcrypto/generators/base_generator'
 
 module Pgcrypto
   module Generators
-    class InstallGenerator < Rails::Generators::Base
-      include Rails::Generators::Migration
-      extend ActiveRecord::Generators::Migration
+    class InstallGenerator < BaseGenerator
 
       source_root File.expand_path('../templates', __FILE__)
 

@@ -1,5 +1,5 @@
 require 'active_record/connection_adapters/postgresql_adapter'
-require 'pgcrypto/active_record_extension'
+require 'pgcrypto/has_encrypted_column'
 require 'pgcrypto/key'
 require 'pgcrypto/key_manager'
 require 'pgcrypto/table_manager'
@@ -15,6 +15,7 @@ module PGCrypto
 
   def self.base_adapter=(base_adapter)
     @base_adapter = base_adapter
+    rebuild_adapter! if respond_to?(:rebuild_adapter!)
   end
 
   def self.keys
@@ -23,3 +24,5 @@ module PGCrypto
 end
 
 PGCrypto.keys[:public] = {:path => '.pgcrypto'} if File.file?('.pgcrypto')
+
+require 'pgcrypto/railtie' if defined? Rails::Railtie
