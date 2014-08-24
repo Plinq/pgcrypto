@@ -1,14 +1,26 @@
 require 'pgcrypto'
 
 module PGCrypto
-  class Adapter < PGCrypto.base_adapter
+  def self.build_adapter!
+    Class.new(PGCrypto.base_adapter) do
+      include PGCrypto::AdapterMethods
+    end
+  end
 
+  def self.rebuild_adapter!
+    remove_const(:Adapter) if const_defined? :Adapter
+    const_set(:Adapter, build_adapter!)
+  end
+
+  module AdapterMethods
     ADAPTER_NAME = 'PGCrypto'
 
-    ColumnMethods.module_eval do
-      def pgcrypto(*args)
-        options = args.extract_options!
-        column(args[0], 'binary', options)
+    def self.included(base)
+      PGCrypto.base_adapter::ColumnMethods.module_eval do
+        def pgcrypto(*args)
+          options = args.extract_options!
+          column(args[0], 'binary', options)
+        end
       end
     end
 
@@ -142,6 +154,8 @@ module PGCrypto
         end
       end
     end
-
   end
+
+  Adapter = build_adapter!
+
 end

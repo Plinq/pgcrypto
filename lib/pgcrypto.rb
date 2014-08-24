@@ -15,6 +15,7 @@ module PGCrypto
 
   def self.base_adapter=(base_adapter)
     @base_adapter = base_adapter
+    rebuild_adapter! if respond_to?(:rebuild_adapter!)
   end
 
   def self.keys
