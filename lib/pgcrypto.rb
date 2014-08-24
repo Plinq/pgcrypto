@@ -23,3 +23,5 @@ module PGCrypto
 end
 
 PGCrypto.keys[:public] = {:path => '.pgcrypto'} if File.file?('.pgcrypto')
+
+require 'pgcrypto/railtie' if defined? Rails::Railtie
