@@ -56,8 +56,12 @@ RSpec.configure do |config|
 
     class PGCryptoTestModel < ActiveRecord::Base
       self.table_name = :pgcrypto_test_models
-      pgcrypto :encrypted_text
+      has_encrypted_column :encrypted_text
     end
+  end
+
+  config.after :each do
+    DatabaseCleaner.clean
   end
 
   config.after :suite do
@@ -66,7 +70,4 @@ RSpec.configure do |config|
     ActiveRecord::Base.connection.drop_database(database_config[:database]) rescue nil
   end
 
-  config.after :each do
-    DatabaseCleaner.clean
-  end
 end
