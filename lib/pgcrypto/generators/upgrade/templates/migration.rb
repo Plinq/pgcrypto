@@ -5,14 +5,15 @@ class UpgradePgcryptoTo040 < ActiveRecord::Migration
   def up
     # Add columns based on the ones we already know exist
     PGCrypto::Column.tables_and_columns do |table, column|
-      add_column table, column, :pgcrypto
+      add_column table, column, :binary
     end
 
     # Migrate column data
     PGCrypto::ColumnConverter.migrate!
 
     # Drop the old, now-unused columns table
-    drop_table :pgcrypto_columns
+    # COMMENT THIS IN IF YOU REALLY WANT IT
+    # drop_table :pgcrypto_columns
   end
 
   def down

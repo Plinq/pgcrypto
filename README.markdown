@@ -15,7 +15,7 @@ Installing PGCrypto is pretty simple, but I'm going to give you the TL;DR first 
 1. Add it to your Gemfile and bundle: `gem "pgcrypto"`
 2. Change `adapter: postgresql` to `adapter: pgcrypto` in `config/database.yml`.
 3. Generate some files using `rails generate pgcrypto:install`.
-4. Add encryptable columns using `add_column :users, :social_security_number, :pgcrypto`
+4. Add encryptable columns using `add_column :users, :social_security_number, :binary`
 5. Run pending migrations: `rake db:migrate`
 6. Tell a model that it has an encrypted column using `has_encrypted_column :social_security_number`
 7. Profit.
@@ -73,7 +73,7 @@ Installing PGCrypto is pretty simple, but I'm going to give you the TL;DR first 
 
 		class AddSocialSecurityNumberToUsers < ActiveRecord::Migration
 		  def change
-		    add_column :users, :social_security_number, :pgcrypto
+		    add_column :users, :social_security_number, :binary
 		  end
 		end
 
