@@ -1,4 +1,8 @@
 # CHANGELOG
+## 0.4.0
+- Refactored EVERYTHING to support encryption directly
+  on columns. See README for upgrade instructions.
+
 ## 0.3.5
 - Fixed ActiveRecord dependency issue (now handles any
   version of ActiveRecord from 3.2 to current)
@@ -52,7 +56,7 @@
 
 ## 0.1.2
 - Added automatic installation of the pgcrypto extension if'n it
-  doesn't already exist. Helpful, but doesn't fully make the 
+  doesn't already exist. Helpful, but doesn't fully make the
   `rake db:test:prepare` cut yet. Still working on that bit...
 
 ## 0.1.1
