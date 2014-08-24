@@ -7,6 +7,7 @@ group :development do
 end
 
 group :test do
+  gem 'activerecord-postgis-adapter', require: false
   gem 'database_cleaner', '>= 0.7'
   gem 'fuubar'
   gem 'guard-rspec'

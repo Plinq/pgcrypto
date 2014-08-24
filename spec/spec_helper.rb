@@ -13,12 +13,17 @@ require 'simplecov'
 require 'pgcrypto'
 
 RSpec.configure do |config|
-  database_config = {:adapter => 'pgcrypto', :database => 'pgcrypto_test', :encoding => 'utf8', :host => 'localhost'}
+  database_config = {
+    adapter: 'pgcrypto',
+    database: '__pgcrypto_gem_test',
+    encoding: 'utf8',
+    host: 'localhost'
+  }
   postgres_config = database_config.merge(:database => 'postgres', :schema_search_path => 'public')
 
   # Set up the database to handle pgcrypto functions and the schema for
   # our tests
-  config.before :all do
+  config.before :suite do
     # Connect to the local postgres schema database
     ActiveRecord::Base.establish_connection(postgres_config)
 
@@ -40,14 +45,14 @@ RSpec.configure do |config|
         end
       end
     end
+
+    ActiveRecord::Base.establish_connection(database_config)
+
+    DatabaseCleaner.strategy = :transaction
   end
 
   config.before :each do
-    DatabaseCleaner.strategy = :transaction
-    DatabaseCleaner.clean_with :transaction
     DatabaseCleaner.start
-
-    ActiveRecord::Base.establish_connection(database_config)
 
     class PGCryptoTestModel < ActiveRecord::Base
       self.table_name = :pgcrypto_test_models
@@ -55,8 +60,8 @@ RSpec.configure do |config|
     end
   end
 
-  config.after :all do
-    # Drop the database when we exist
+  config.after :suite do
+    # Drop the database when we exit
     ActiveRecord::Base.establish_connection(postgres_config)
     ActiveRecord::Base.connection.drop_database(database_config[:database]) rescue nil
   end

@@ -118,4 +118,15 @@ describe PGCrypto do
 
     instance_eval(&specs)
   end
+
+  describe "with the PostGIS adapter" do
+    before :all do
+      require 'activerecord-postgis-adapter'
+      PGCrypto.keys[:private] = {:path => File.join(keypath, 'private.key')}
+      PGCrypto.keys[:public] = {:path => File.join(keypath, 'public.key')}
+      PGCrypto.base_adapter = ActiveRecord::ConnectionAdapters::PostGISAdapter::MainAdapter
+    end
+
+    instance_eval(&specs)
+  end
 end
