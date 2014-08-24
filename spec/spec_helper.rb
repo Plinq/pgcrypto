@@ -1,15 +1,13 @@
+require 'rubygems'
+require 'simplecov'
+
 # Add lib/ to the load path
 $LOAD_PATH.unshift(File.expand_path(File.join('..', 'lib'), File.dirname(__FILE__)))
 
-# Load up our Gemfile
-require 'rubygems'
-require 'bundler/setup'
-Bundler.require(:default, :test)
+require 'database_cleaner'
 
-# Enable coverage reporting
-require 'simplecov'
-
-# Requier and configure PGCrypto
+gem 'activerecord', ENV.fetch('ACTIVE_RECORD_VERSION', '>= 4.0')
+require 'active_record'
 require 'pgcrypto'
 
 RSpec.configure do |config|
@@ -41,7 +39,7 @@ RSpec.configure do |config|
       ActiveRecord::Schema.define do
         create_table :pgcrypto_test_models, :force => true do |t|
           t.string :name, :limit => 32
-          t.pgcrypto :encrypted_text
+          t.binary :encrypted_text
         end
       end
     end

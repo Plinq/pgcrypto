@@ -15,22 +15,6 @@ module PGCrypto
   module AdapterMethods
     ADAPTER_NAME = 'PGCrypto'
 
-    def self.included(base)
-      PGCrypto.base_adapter::ColumnMethods.module_eval do
-        def pgcrypto(*args)
-          options = args.extract_options!
-          column(args[0], 'binary', options)
-        end
-      end
-    end
-
-    def native_database_types(*args, &block)
-      types = super
-      {
-        pgcrypto: types[:binary]
-      }.merge(types)
-    end
-
     def to_sql(arel, *args)
       case arel
       when Arel::InsertManager

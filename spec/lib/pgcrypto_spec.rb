@@ -21,12 +21,14 @@ specs = proc do
   let(:text_2_raw) { "\\x736f6d657468696e6720656c736520656e746972656c79" }
 
   it "extends ActiveRecord::Base" do
+    expect(PGCryptoTestModel).to respond_to(:has_encrypted_column)
     expect(PGCryptoTestModel).to respond_to(:pgcrypto)
   end
 
   it "encrypts text on insert" do
-    PGCryptoTestModel.create!(encrypted_text: text)
+    PGCryptoTestModel.create!(name: 'foobar', encrypted_text: text)
     expect(stored_raw).not_to eq(text_raw)
+    expect(PGCryptoTestModel.last.name).to eq('foobar')
   end
 
   it "encrypts new text on update" do
@@ -54,10 +56,10 @@ specs = proc do
     expect(PGCryptoTestModel.find(model.id).encrypted_text).to eq(text)
   end
 
-  it "retrieves decrypted text at update" do
+  it "retrieves decrypted text after update" do
     model = PGCryptoTestModel.create!(:encrypted_text => 'i will update')
     expect(PGCryptoTestModel.find(model.id).encrypted_text).to eq('i will update')
-    model.update_attributes!(:encrypted_text => 'i updated')
+    model.update_attributes!(encrypted_text: 'i updated', name: 'testy mctesterson')
     expect(PGCryptoTestModel.find(model.id).encrypted_text).to eq('i updated')
   end
 
@@ -95,7 +97,7 @@ specs = proc do
 
   it "decrypts direct selects" do
     model = PGCryptoTestModel.create!(:encrypted_text => 'to be selected...')
-    expect(PGCryptoTestModel.select(:id, :encrypted_text).where(id: model.id).first).to eq(model)
+    expect(PGCryptoTestModel.select([:id, :encrypted_text]).where(id: model.id).first).to eq(model)
   end
 end
 
